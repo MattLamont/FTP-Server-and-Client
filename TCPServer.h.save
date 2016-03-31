@@ -26,7 +26,7 @@ class TCPServer
     private:
 
         void start_accept();
-        void handle_accept( TCPServerConnection::pointer new_connection,
+        void handle_accept( TCPSConnection::pointer new_connection,
                             const boost::system::error_code& error);
 
         tcp::acceptor acceptor_;

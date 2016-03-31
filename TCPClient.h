@@ -1,5 +1,5 @@
-#ifndef TCPSERVER_H
-#define TCPSERVER_H
+#ifndef TCPCLIENT_H
+#define TCPCLIENT_H
 
 
 #include <ctime>
@@ -10,26 +10,26 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
 
-#include "TCPServerConnection.h"
+#include "TCPClientConnection.h"
 
 using boost::asio::ip::tcp;
 
 
-class TCPServer
+class TCPClient
 {
     public:
 
-        TCPServer( boost::asio::io_service& io_service );
+        TCPClient( boost::asio::io_service& io_service );
 
-        virtual ~TCPServer();
+        virtual ~TCPClient();
 
     private:
 
         void start_accept();
-        void handle_accept( TCPServerConnection::pointer new_connection,
+        void handle_accept( TCPClientConnection::pointer new_connection,
                             const boost::system::error_code& error);
 
         tcp::acceptor acceptor_;
 };
 
-#endif // TCPSERVER_H
+#endif // TCPClIENT_H
