@@ -5,9 +5,26 @@
 
 void TCPClientConnection::start()
 {
-    message_ = make_daytime_string();
+    try
+    {
+        for (;;)
+        {
+            boost::array<char, 128> buf;
+            boost::system::error_code error;
 
-    boost::asio::async_write(socket_, boost::asio::buffer(message_),
-    boost::bind( &TCPClientConnection::handle_write , shared_from_this() , boost::asio::placeholders::error , boost::asio::placeholders::bytes_transferred));
+            size_t len = socket_.receive(boost::asio::buffer(buf), NULL ,  error);
+
+            if (error == boost::asio::error::eof)
+                break; // Connection closed cleanly by peer. Eof is sent when the server closes the connection
+            else if (error)
+                throw boost::system::system_error(error); // Some other error.
+
+            std::cout.write(buf.data(), len);
+        }
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
 }
 
