@@ -4,14 +4,19 @@
 #include <ctime>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <fstream>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 
 
 
 using boost::asio::ip::tcp;
+using namespace boost;
 
 
 class TCPServerConnection : public boost::enable_shared_from_this<TCPServerConnection>

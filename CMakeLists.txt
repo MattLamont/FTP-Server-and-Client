@@ -1,6 +1,6 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 FATAL_ERROR )
 
-find_package( Boost COMPONENTS system thread  )
+find_package( Boost COMPONENTS system filesystem thread  )
 IF( Boost_FOUND )
     INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIRS})
     add_definitions( "-DHAS_BOOST" )
