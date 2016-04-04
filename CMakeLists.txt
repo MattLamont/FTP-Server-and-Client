@@ -24,8 +24,6 @@ target_link_libraries( server ${Boost_LIBRARIES} pthread )
 
 add_executable( client
                 "src/client.cpp"
-                "src/TCPClient.cpp"
-                "src/TCPClientConnection.cpp"
                 ${Headers} )
 
 target_link_libraries( client ${Boost_LIBRARIES} pthread )
