@@ -158,6 +158,11 @@ void TCPServerConnection::start()
             }
 
 
+            if( command.find( "bye" ) != std::string::npos )
+            {
+                std::cout << "File copy server is down!\n";
+                exit( 0 );
+            }
 
 
             std::string output = executeCommand( std::string(buf.data()) );

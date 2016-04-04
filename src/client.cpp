@@ -63,32 +63,78 @@ int main(int argc, char* argv[])
                 throw boost::system::system_error(error);
             }
 
-            boost::system::error_code ignored_error;
-            boost::asio::write( control_socket , boost::asio::buffer( user_input ) , boost::asio::transfer_all() , ignored_error );
-
-            control_socket.close();
-
-            if( user_input.find( "download" ) != std::string::npos )
-            {
-                executeFileDownloadCommand( user_input );
-                continue;
-            }
-
-            if( user_input.find( "upload" ) != std::string::npos )
-            {
-                executeFileUploadCommand( std::string( argv[1] ) , user_input );
-                continue;
-            }
-
             boost::asio::io_service answer_io_service;
 
             tcp::acceptor acceptor(answer_io_service, tcp::endpoint(tcp::v4(), 3032));
             tcp::socket socket(answer_io_service);
-            acceptor.accept(socket);
+
+            if( user_input.find( "catalog" ) != std::string::npos )
+            {
+                size_t begin = user_input.find( "catalog" );
+                user_input.erase( begin , 7 );
+                std::string new_input = "ls ";
+                new_input += user_input;
+                boost::system::error_code ignored_error;
+                boost::asio::write( control_socket , boost::asio::buffer( new_input ) , boost::asio::transfer_all() , ignored_error );
+                control_socket.close();
+                acceptor.accept(socket);
+            }
+
+            else if( user_input.find( "spwd" ) != std::string::npos )
+            {
+                size_t begin = user_input.find( "spwd" );
+                user_input.erase( begin , 4 );
+                std::string new_input = "pwd ";
+                new_input += user_input;
+                boost::system::error_code ignored_error;
+                boost::asio::write( control_socket , boost::asio::buffer( new_input ) , boost::asio::transfer_all() , ignored_error );
+                control_socket.close();
+                acceptor.accept(socket);
+            }
+
+            else if( user_input.find( "bye" ) != std::string::npos )
+            {
+                boost::system::error_code ignored_error;
+                boost::asio::write( control_socket , boost::asio::buffer( user_input ) , boost::asio::transfer_all() , ignored_error );
+                control_socket.close();
+                socket.close();
+                std::cout << "Internet copy client is down!\n";
+                return 0;
+            }
+
+
+            else if( user_input.find( "download" ) != std::string::npos )
+            {
+                boost::system::error_code ignored_error;
+                boost::asio::write( control_socket , boost::asio::buffer( user_input ) , boost::asio::transfer_all() , ignored_error );
+                control_socket.close();
+                socket.close();
+                executeFileDownloadCommand( user_input );
+                continue;
+            }
+
+            else if( user_input.find( "upload" ) != std::string::npos )
+            {
+                boost::system::error_code ignored_error;
+                boost::asio::write( control_socket , boost::asio::buffer( user_input ) , boost::asio::transfer_all() , ignored_error );
+                control_socket.close();
+                socket.close();
+                executeFileUploadCommand( std::string( argv[1] ) , user_input );
+                continue;
+            }
+
+            else
+            {
+                std::cout << executeCommand( user_input ) << "\n";
+                control_socket.close();
+                socket.close();
+                continue;
+            }
+
 
             for (;;)
             {
-                boost::array<char, 128> buf;
+                boost::array<char, 5000> buf;
                 boost::system::error_code error;
 
                 size_t len = socket.read_some(boost::asio::buffer(buf), error);
