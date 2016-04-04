@@ -25,6 +25,7 @@ void TCPServerConnection::start()
             //Found the download command
             if( command.find( "download" ) != std::string::npos )
             {
+                std::cout << "got download request.\n";
                 boost::asio::io_service io_service;
 
                 tcp::resolver resolver(io_service);
@@ -51,36 +52,107 @@ void TCPServerConnection::start()
                 std::vector< std::string > tokenized_command;
                 boost::algorithm::split( tokenized_command , command , is_any_of( " " ) , token_compress_on );
 
+                std::cout << "Recieved request to download " << tokenized_command[1] << "\n";
+
                 if( tokenized_command.size() != 3 )
                 {
-                    std::string error_message = "Error: could not perform download.";
+                    std::string error_message = "\x1Error: could not perform download.";
+                    std::cerr << error_message << "\n";
                     boost::asio::write( sendback_socket , boost::asio::buffer( error_message ) , boost::asio::transfer_all() , ignored_error );
                     sendback_socket.close();
                     return;
                 }
 
-                std::string target_file = tokenized_command[2];
+                std::string target_file = tokenized_command[1];
                 boost::filesystem::path target_path( target_file );
 
                 if( !boost::filesystem::exists( target_path ))
                 {
-                    std::string error_message = "Error: could not find file.";
+                    std::string error_message = "\x1Error: could not find file.";
+                    std::cout << error_message << "\n";
                     boost::asio::write( sendback_socket , boost::asio::buffer( error_message ) , boost::asio::transfer_all() , ignored_error );
                     sendback_socket.close();
                     return;
                 }
 
-                std::ifstream infile;
-                infile.open( target_file.c_str() );
-                std::string line;
 
-                while( std::getline( infile , line ))
+                std::ifstream infile( target_file.c_str() );
+
+                if( !infile.is_open() )
                 {
-                    boost::asio::write( sendback_socket , boost::asio::buffer( line ) , boost::asio::transfer_all() , ignored_error );
+                    std::cerr << "Error: unable to open file.\n";
+                    boost::asio::write( sendback_socket , boost::asio::buffer( std::string( "\x1Error: unable to open file." ) ) , boost::asio::transfer_all() , ignored_error );
+                    sendback_socket.close();
+                    return;
                 }
+
+                std::string file_contents = "";
+                std::string line = "";
+
+                std::cout << "Reading in file...\n";
+                while( std::getline( infile , line ) )
+                {
+                    file_contents += line;
+                    file_contents += "\n";
+                    line = "";
+                }
+
+                std::cout << "sending " << file_contents.size() << " bytes over socket\n";
+                boost::asio::write( sendback_socket , boost::asio::buffer( file_contents ) , boost::asio::transfer_all() , ignored_error );
 
                 infile.close();
                 sendback_socket.close();
+
+                std::cout << "finished download\n";
+                return;
+
+            }
+
+
+
+            if( command.find( "upload" ) != std::string::npos )
+            {
+                std::cout << "got upload request.\n";
+
+                boost::asio::io_service answer_io_service;
+
+                tcp::acceptor acceptor(answer_io_service, tcp::endpoint(tcp::v4(), 3031));
+                tcp::socket socket(answer_io_service);
+                acceptor.accept(socket);
+
+                std::cout << "Accepted client connection request.\n";
+
+                std::vector< std::string > tokenized_command;
+                boost::algorithm::split( tokenized_command , command , is_any_of( " " ) , token_compress_on );
+
+                if( tokenized_command.size() != 3 )
+                {
+                    socket.close();
+                    return;
+                }
+
+                std::ofstream outfile;
+                outfile.open( tokenized_command[2].c_str() );
+
+                for (;;)
+                {
+                    boost::array<char, 10000> buf;
+                    boost::system::error_code error;
+
+                    size_t len = socket.read_some(boost::asio::buffer(buf), error);
+
+                    if (error == boost::asio::error::eof)
+                        break; // Connection closed cleanly by peer. Eof is sent when the server closes the connection
+                    else if (error)
+                        throw boost::system::system_error(error); // Some other error.
+
+
+                    outfile << buf.data();
+                }
+
+                socket.close();
+                outfile.close();
+                std::cout << "finished uploading file.\n";
                 return;
 
             }

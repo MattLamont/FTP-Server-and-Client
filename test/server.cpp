@@ -71,13 +71,6 @@ int main(int argc, char* argv[])
             if( user_input.find( "download" ) != std::string::npos )
             {
                 executeFileDownloadCommand( user_input );
-                continue;
-            }
-
-            if( user_input.find( "upload" ) != std::string::npos )
-            {
-                executeFileUploadCommand( std::string( argv[1] ) , user_input );
-                continue;
             }
 
             boost::asio::io_service answer_io_service;
@@ -103,7 +96,43 @@ int main(int argc, char* argv[])
 
             socket.close();
 
+            /*
+            boost::asio::io_service answer_io_service;
+            tcp::resolver answer_resolver(io_service);
+            tcp::resolver::query answer_query( argv[1], DOWNLOAD_SOCKET_PORT );
+            tcp::resolver::iterator answer_endpoint_iterator = answer_resolver.resolve(answer_query);
+            tcp::resolver::iterator answer_end;
 
+            tcp::socket answer_socket(answer_io_service);
+            boost::system::error_code answer_error = boost::asio::error::host_not_found;
+
+
+            while (answer_error && answer_endpoint_iterator != answer_end)
+            {
+                answer_socket.close();
+                answer_socket.connect(*answer_endpoint_iterator++, answer_error);
+            }
+
+            if (error)
+            {
+                throw boost::system::system_error(answer_error);
+            }
+
+            for (;;)
+            {
+                boost::array<char, 128> buf;
+                boost::system::error_code error;
+
+                size_t len = answer_socket.read_some(boost::asio::buffer(buf), error);
+
+                if (error == boost::asio::error::eof)
+                    break; // Connection closed cleanly by peer. Eof is sent when the server closes the connection
+                else if (error)
+                    throw boost::system::system_error(error); // Some other error.
+
+                std::cout.write(buf.data(), len);
+            }
+            */
         }
 
 
