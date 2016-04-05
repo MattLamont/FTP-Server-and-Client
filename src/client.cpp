@@ -66,6 +66,8 @@ int main(int argc, char* argv[])
             boost::asio::io_service answer_io_service;
 
             tcp::acceptor acceptor(answer_io_service, tcp::endpoint(tcp::v4(), 3032));
+            boost::asio::socket_base::reuse_address option(true);
+            acceptor.set_option( option );
             tcp::socket socket(answer_io_service);
 
             if( user_input.find( "catalog" ) != std::string::npos )
@@ -148,6 +150,7 @@ int main(int argc, char* argv[])
             }
 
             socket.close();
+            acceptor.close();
 
 
         }

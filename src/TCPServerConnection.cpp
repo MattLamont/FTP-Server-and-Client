@@ -117,6 +117,8 @@ void TCPServerConnection::start()
                 boost::asio::io_service answer_io_service;
 
                 tcp::acceptor acceptor(answer_io_service, tcp::endpoint(tcp::v4(), 3031));
+                boost::asio::socket_base::reuse_address option(true);
+                acceptor.set_option( option );
                 tcp::socket socket(answer_io_service);
                 acceptor.accept(socket);
 
@@ -151,6 +153,7 @@ void TCPServerConnection::start()
                 }
 
                 socket.close();
+                acceptor.close();
                 outfile.close();
                 std::cout << "finished uploading file.\n";
                 return;
