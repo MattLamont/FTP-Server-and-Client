@@ -65,10 +65,19 @@ int main(int argc, char* argv[])
 
             boost::asio::io_service answer_io_service;
 
+            tcp::endpoint endpoint( tcp::v4() , 3032 );
+            tcp::acceptor acceptor( answer_io_service );
+            acceptor.open( endpoint.protocol() );
+            acceptor.set_option( asio::ip::tcp::acceptor::reuse_address( true ));
+            acceptor.bind( endpoint );
+
+
+            /*
             tcp::acceptor acceptor(answer_io_service, tcp::endpoint(tcp::v4(), 3032));
             boost::asio::socket_base::reuse_address option(true);
             acceptor.set_option( option );
             tcp::socket socket(answer_io_service);
+            */
 
             if( user_input.find( "catalog" ) != std::string::npos )
             {
@@ -79,7 +88,7 @@ int main(int argc, char* argv[])
                 boost::system::error_code ignored_error;
                 boost::asio::write( control_socket , boost::asio::buffer( new_input ) , boost::asio::transfer_all() , ignored_error );
                 control_socket.close();
-                acceptor.accept(socket);
+                acceptor.listen();
             }
 
             else if( user_input.find( "spwd" ) != std::string::npos )
@@ -91,7 +100,7 @@ int main(int argc, char* argv[])
                 boost::system::error_code ignored_error;
                 boost::asio::write( control_socket , boost::asio::buffer( new_input ) , boost::asio::transfer_all() , ignored_error );
                 control_socket.close();
-                acceptor.accept(socket);
+                acceptor.listen();
             }
 
             else if( user_input.find( "bye" ) != std::string::npos )

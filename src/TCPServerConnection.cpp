@@ -37,16 +37,22 @@ void TCPServerConnection::start()
                 error = boost::asio::error::host_not_found;
                 boost::system::error_code ignored_error;
 
-                while (error && endpoint_iterator != end)
+                for( int i = 0 ; i < 10 ; i++ )
                 {
-                    sendback_socket.close();
-                    sendback_socket.connect(*endpoint_iterator++, error);
+                    std::this_thread::sleep_for( std::chrono::seconds(i));
+
+                    while (error && endpoint_iterator != end)
+                    {
+                        sendback_socket.close();
+                        sendback_socket.connect(*endpoint_iterator++, error);
+                    }
                 }
 
                 if (error)
                 {
                     throw boost::system::system_error(error);
                 }
+
 
 
                 std::vector< std::string > tokenized_command;
@@ -116,11 +122,20 @@ void TCPServerConnection::start()
 
                 boost::asio::io_service answer_io_service;
 
+                tcp::endpoint endpoint( tcp::v4() , 3031 );
+                tcp::acceptor acceptor( answer_io_service );
+                acceptor.open( endpoint.protocol() );
+                acceptor.set_option( asio::ip::tcp::acceptor::reuse_address( true ));
+                acceptor.bind( endpoint );
+                acceptor.listen();
+
+                /*
                 tcp::acceptor acceptor(answer_io_service, tcp::endpoint(tcp::v4(), 3031));
                 boost::asio::socket_base::reuse_address option(true);
                 acceptor.set_option( option );
                 tcp::socket socket(answer_io_service);
                 acceptor.accept(socket);
+                */
 
                 std::cout << "Accepted client connection request.\n";
 

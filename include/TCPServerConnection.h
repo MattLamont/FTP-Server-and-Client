@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <thread>
+#include <chrono>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
