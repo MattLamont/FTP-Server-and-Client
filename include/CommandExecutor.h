@@ -57,20 +57,22 @@ void executeFileDownloadCommand( std::string command )
 
     boost::asio::io_service answer_io_service;
 
+    /*
     tcp::endpoint endpoint( tcp::v4() , 3032 );
     tcp::acceptor acceptor( answer_io_service );
     acceptor.open( endpoint.protocol() );
     acceptor.set_option( asio::ip::tcp::acceptor::reuse_address( true ));
     acceptor.bind( endpoint );
     acceptor.listen();
+    */
 
-    /*
-    tcp::acceptor acceptor(answer_io_service, tcp::endpoint(tcp::v4(), 3032));
+
+    tcp::acceptor acceptor(answer_io_service, tcp::endpoint(tcp::v4(), 3033));
     boost::asio::socket_base::reuse_address option(true);
     acceptor.set_option( option );
     tcp::socket socket(answer_io_service);
     acceptor.accept(socket);
-    */
+
 
     std::cout << "Accepted Server connection request.\n";
 

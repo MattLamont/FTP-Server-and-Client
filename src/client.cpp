@@ -12,7 +12,8 @@ using boost::asio::ip::tcp;
 
 const std::string CONTROL_SOCKET_PORT = "3030";
 const std::string UPLOAD_SOCKET_PORT = "3031";
-const std::string DOWNLOAD_SOCKET_PORT = "3032";
+const std::string INFO_SOCKET_PORT = "3032";
+const std::string DOWNLOAD_SOCKET_PORT = "3033";
 
 
 int main(int argc, char* argv[])
@@ -65,19 +66,22 @@ int main(int argc, char* argv[])
 
             boost::asio::io_service answer_io_service;
 
+            /*
             tcp::endpoint endpoint( tcp::v4() , 3032 );
+            tcp::socket socket(answer_io_service);
             tcp::acceptor acceptor( answer_io_service );
             acceptor.open( endpoint.protocol() );
             acceptor.set_option( asio::ip::tcp::acceptor::reuse_address( true ));
             acceptor.bind( endpoint );
+            */
 
 
-            /*
+
             tcp::acceptor acceptor(answer_io_service, tcp::endpoint(tcp::v4(), 3032));
             boost::asio::socket_base::reuse_address option(true);
             acceptor.set_option( option );
             tcp::socket socket(answer_io_service);
-            */
+
 
             if( user_input.find( "catalog" ) != std::string::npos )
             {
@@ -88,7 +92,7 @@ int main(int argc, char* argv[])
                 boost::system::error_code ignored_error;
                 boost::asio::write( control_socket , boost::asio::buffer( new_input ) , boost::asio::transfer_all() , ignored_error );
                 control_socket.close();
-                acceptor.listen();
+                acceptor.accept(socket);
             }
 
             else if( user_input.find( "spwd" ) != std::string::npos )
@@ -100,7 +104,7 @@ int main(int argc, char* argv[])
                 boost::system::error_code ignored_error;
                 boost::asio::write( control_socket , boost::asio::buffer( new_input ) , boost::asio::transfer_all() , ignored_error );
                 control_socket.close();
-                acceptor.listen();
+                acceptor.accept(socket);
             }
 
             else if( user_input.find( "bye" ) != std::string::npos )
@@ -120,6 +124,7 @@ int main(int argc, char* argv[])
                 boost::asio::write( control_socket , boost::asio::buffer( user_input ) , boost::asio::transfer_all() , ignored_error );
                 control_socket.close();
                 socket.close();
+                acceptor.close();
                 executeFileDownloadCommand( user_input );
                 continue;
             }
@@ -130,6 +135,7 @@ int main(int argc, char* argv[])
                 boost::asio::write( control_socket , boost::asio::buffer( user_input ) , boost::asio::transfer_all() , ignored_error );
                 control_socket.close();
                 socket.close();
+                acceptor.close();
                 executeFileUploadCommand( std::string( argv[1] ) , user_input );
                 continue;
             }
